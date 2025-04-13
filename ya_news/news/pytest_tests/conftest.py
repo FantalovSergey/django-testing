@@ -1,7 +1,6 @@
-import pytest
-
 from datetime import datetime, timedelta
 
+import pytest
 from django.conf import settings
 from django.test.client import Client
 from django.urls import reverse
@@ -11,6 +10,11 @@ from news.forms import BAD_WORDS
 from news.models import Comment, News
 
 TEST_COMMENTS_COUNT = 10
+
+
+@pytest.fixture(autouse=True)
+def use_db(db):
+    pass
 
 
 @pytest.fixture
@@ -52,7 +56,7 @@ def many_news():
         )
         for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
     ]
-    return News.objects.bulk_create(all_news)
+    News.objects.bulk_create(all_news)
 
 
 @pytest.fixture
