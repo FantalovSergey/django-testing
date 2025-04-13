@@ -1,10 +1,9 @@
-from django.conf import settings
 import pytest
+from django.conf import settings
 
 from news.forms import CommentForm
 
 
-@pytest.mark.django_db
 @pytest.mark.usefixtures('many_news')
 def test_news_count(client, url_home):
     response = client.get(url_home)
@@ -12,7 +11,6 @@ def test_news_count(client, url_home):
     assert object_list.count() == settings.NEWS_COUNT_ON_HOME_PAGE
 
 
-@pytest.mark.django_db
 @pytest.mark.usefixtures('many_news')
 def test_news_order(client, url_home):
     response = client.get(url_home)
@@ -29,7 +27,6 @@ def test_comments_order(client, url_detail):
     assert timestamps == sorted(timestamps)
 
 
-@pytest.mark.django_db
 def test_anonymous_client_has_no_form(client, url_detail):
     response = client.get(url_detail)
     assert 'form' not in response.context

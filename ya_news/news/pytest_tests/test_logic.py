@@ -1,7 +1,6 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
-import pytest
 from pytest_django.asserts import assertRedirects, assertFormError
 
 from news.forms import WARNING
@@ -10,7 +9,6 @@ from news.models import Comment
 User = get_user_model()
 
 
-@pytest.mark.django_db
 def test_anonymous_user_cant_create_comment(client, url_detail, form_data):
     client.post(url_detail, form_data)
     assert Comment.objects.count() == 0
@@ -50,14 +48,19 @@ def test_author_can_edit_comment(
         author_client, comment, url_edit_comment, form_data, url_to_comments):
     response = author_client.post(url_edit_comment, form_data)
     assertRedirects(response, url_to_comments)
-    comment.refresh_from_db()
-    assert comment.text == form_data['text']
+    comment_from_db = Comment.objects.get(id=comment.id)
+    assert comment_from_db.text == form_data['text']
+    assert comment_from_db.news == comment.news
+    assert comment_from_db.author == comment.author
+    assert comment_from_db.created == comment.created
 
 
 def test_user_cant_edit_comment_of_another_user(
         reader_client, comment, url_edit_comment, form_data):
-    initial_text = comment.text
     response = reader_client.post(url_edit_comment, form_data)
     assert response.status_code == HTTPStatus.NOT_FOUND
-    comment.refresh_from_db()
-    assert comment.text == initial_text
+    comment_from_db = Comment.objects.get(id=comment.id)
+    assert comment_from_db.text == comment.text
+    assert comment_from_db.news == comment.news
+    assert comment_from_db.author == comment.author
+    assert comment_from_db.created == comment.created
